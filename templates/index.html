@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de Rutas - Tijuana</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0D1B2A; color: #fff; }
+
+        header {
+            background: #1B4F72;
+            padding: 20px 40px;
+            border-bottom: 3px solid #2E86C1;
+        }
+        header h1 { font-size: 24px; }
+        header p { color: #7FB3D3; font-size: 13px; margin-top: 4px; }
+
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+        .card {
+            background: #1A2B3C;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #2E86C1;
+        }
+        .card h2 { font-size: 15px; color: #2E86C1; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #2E86C1;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        select { background: #0D1B2A; color: #fff; }
+        button {
+            background: #2E86C1;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1B4F72; }
+
+        .resultado {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            min-height: 40px;
+            background: #0D1B2A;
+            border: 1px solid #2E86C1;
+            white-space: pre-wrap;
+        }
+        .error { color: #E74C3C; }
+        .ok { color: #2ECC71; }
+        .warn { color: #F39C12; }
+
+        .grafo-card {
+            background: #1A2B3C;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #2E86C1;
+            text-align: center;
+        }
+        .grafo-card h2 { font-size: 15px; color: #2E86C1; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; text-align: left; }
+        .grafo-card img { width: 100%; border-radius: 8px; }
+        .grafo-card button { width: auto; padding: 10px 24px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🚌 Analizador Semántico — Red de Transporte Público</h1>
+    <p>Ciudad de Tijuana, B.C. · Lenguajes y Autómatas 2 · ITT</p>
+</header>
+
+<div class="container">
+    <div class="grid">
+
+        <!-- Análisis semántico -->
+        <div class="card">
+            <h2>Análisis Semántico</h2>
+            <button onclick="analizar()">Analizar Red</button>
+            <div class="resultado" id="res-analisis">Presiona el botón para analizar.</div>
+        </div>
+
+        <!-- Ruta más corta -->
+        <div class="card">
+            <h2>Ruta más corta</h2>
+            <select id="origen">
+                {% for p in paradas %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+            <select id="destino">
+                {% for p in paradas %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+            <button onclick="calcularRuta()">Calcular Ruta</button>
+            <div class="resultado" id="res-ruta">Selecciona origen y destino.</div>
+        </div>
+
+    </div>
+
+    <!-- Grafo -->
+    <div class="grafo-card">
+        <h2>Visualización del Grafo</h2>
+        <button onclick="cargarGrafo()">Generar Grafo</button>
+        <br><br>
+        <img id="grafo-img" src="" alt="" style="display:none"/>
+    </div>
+</div>
+
+<script>
+async function analizar() {
+    const res = document.getElementById("res-analisis");
+    res.textContent = "Analizando...";
+    const data = await fetch("/analizar").then(r => r.json());
+    let txt = "";
+    if (data.errores.length === 0) txt += "✅ Sin errores estructurales.\n";
+    else data.errores.forEach(e => txt += `❌ ${e}\n`);
+    if (data.advertencias.length === 0) txt += "✅ Sin paradas críticas.";
+    else data.advertencias.forEach(a => txt += `⚠️ ${a}`);
+    res.textContent = txt;
+}
+
+async function calcularRuta() {
+    const origen = document.getElementById("origen").value;
+    const destino = document.getElementById("destino").value;
+    const res = document.getElementById("res-ruta");
+    res.textContent = "Calculando...";
+    const data = await fetch(`/ruta?origen=${origen}&destino=${destino}`).then(r => r.json());
+    if (data.error) {
+        res.textContent = `❌ ${data.error}`;
+    } else {
+        res.textContent = `🛣️ ${data.ruta.join(" → ")}\n⏱️ Tiempo estimado: ${data.tiempo} minutos`;
+    }
+}
+
+async function cargarGrafo() {
+    const img = document.getElementById("grafo-img");
+    img.style.display = "none";
+    const data = await fetch("/grafo").then(r => r.json());
+    img.src = "data:image/png;base64," + data.imagen;
+    img.style.display = "block";
+}
+</script>
+
+</body>
+</html>
