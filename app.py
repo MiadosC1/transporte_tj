@@ -47,5 +47,27 @@ def grafo_imagen():
     img = base64.b64encode(buf.read()).decode("utf-8")
     return jsonify({"imagen": img})
 
+@app.route("/mapa")
+def mapa():
+    from datos import COORDENADAS
+    nodos = []
+    for nodo in G.nodes():
+        if nodo in COORDENADAS:
+            criticos = list(nx.articulation_points(G))
+            nodos.append({
+                "nombre": nodo,
+                "coords": COORDENADAS[nodo],
+                "critico": nodo in criticos
+            })
+    aristas = []
+    for u, v, data in G.edges(data=True):
+        if u in COORDENADAS and v in COORDENADAS:
+            aristas.append({
+                "origen": COORDENADAS[u],
+                "destino": COORDENADAS[v],
+                "peso": data.get("weight", 0)
+            })
+    return render_template("mapa.html", nodos=nodos, aristas=aristas)
+
 if __name__ == "__main__":
     app.run(debug=True)

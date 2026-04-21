@@ -78,6 +78,7 @@
 <header>
     <h1>🚌 Analizador Semántico — Red de Transporte Público</h1>
     <p>Ciudad de Tijuana, B.C. · Lenguajes y Autómatas 2 · ITT</p>
+    <a href="/mapa" style="color:#7FB3D3;text-decoration:none;font-size:13px;margin-left:20px">🗺️ Ver mapa interactivo</a>
 </header>
 
 <div class="container">
@@ -85,7 +86,7 @@
 
         <!-- Análisis semántico -->
         <div class="card">
-            <h2>Análisis Semántico</h2>
+            <h2>Análisis</h2>
             <button onclick="analizar()">Analizar Red</button>
             <div class="resultado" id="res-analisis">Presiona el botón para analizar.</div>
         </div>
@@ -124,10 +125,10 @@ async function analizar() {
     res.textContent = "Analizando...";
     const data = await fetch("/analizar").then(r => r.json());
     let txt = "";
-    if (data.errores.length === 0) txt += "✅ Sin errores estructurales.\n";
-    else data.errores.forEach(e => txt += `❌ ${e}\n`);
-    if (data.advertencias.length === 0) txt += "✅ Sin paradas críticas.";
-    else data.advertencias.forEach(a => txt += `⚠️ ${a}`);
+    if (data.errores.length === 0) txt += " Sin errores estructurales.\n";
+    else data.errores.forEach(e => txt += ` ${e}\n`);
+    if (data.advertencias.length === 0) txt += " Sin paradas críticas.";
+    else data.advertencias.forEach(a => txt += ` ${a}`);
     res.textContent = txt;
 }
 
@@ -138,9 +139,9 @@ async function calcularRuta() {
     res.textContent = "Calculando...";
     const data = await fetch(`/ruta?origen=${origen}&destino=${destino}`).then(r => r.json());
     if (data.error) {
-        res.textContent = `❌ ${data.error}`;
+        res.textContent = ` ${data.error}`;
     } else {
-        res.textContent = `🛣️ ${data.ruta.join(" → ")}\n⏱️ Tiempo estimado: ${data.tiempo} minutos`;
+        res.textContent = ` ${data.ruta.join(" → ")}\n Tiempo estimado: ${data.tiempo} minutos`;
     }
 }
 

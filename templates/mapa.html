@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mapa - Red de Transporte Tijuana</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0D1B2A; color: #fff; }
+        header {
+            background: #1B4F72;
+            padding: 16px 30px;
+            border-bottom: 3px solid #2E86C1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 18px; }
+        header a {
+            color: #7FB3D3;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        header a:hover { color: #fff; }
+        #map { height: calc(100vh - 60px); width: 100%; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🗺️ Mapa Interactivo — Red de Transporte Público Tijuana</h1>
+    <a href="/">← Volver al análisis</a>
+</header>
+
+<div id="map"></div>
+
+<script>
+    const nodos = {{ nodos | tojson }};
+    const aristas = {{ aristas | tojson }};
+
+    const map = L.map('map').setView([32.5305, -117.0353], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Dibujar aristas
+    aristas.forEach(a => {
+        const linea = L.polyline([a.origen, a.destino], {
+            color: '#2E86C1',
+            weight: 3,
+            opacity: 0.8
+        }).addTo(map);
+        const midLat = (a.origen[0] + a.destino[0]) / 2;
+        const midLng = (a.origen[1] + a.destino[1]) / 2;
+        L.marker([midLat, midLng], {
+            icon: L.divIcon({
+                className: '',
+                html: `<div style="background:#1B4F72;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;white-space:nowrap">${a.peso} min</div>`,
+                iconAnchor: [20, 10]
+            })
+        }).addTo(map);
+    });
+
+    // Dibujar nodos
+    nodos.forEach(n => {
+        const color = n.critico ? '#E74C3C' : '#2E86C1';
+        const marker = L.circleMarker(n.coords, {
+            radius: 10,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
+
+        marker.bindPopup(`
+            <b>${n.nombre}</b><br>
+            ${n.critico ? '⚠️ <span style="color:red">Parada crítica</span>' : '✅ Parada normal'}
+        `);
+
+        L.marker(n.coords, {
+            icon: L.divIcon({
+                className: '',
+                html: `<div style="background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;margin-top:12px;white-space:nowrap">${n.nombre}</div>`,
+                iconAnchor: [-5, 0]
+            })
+        }).addTo(map);
+    });
+</script>
+
+</body>
+</html>
