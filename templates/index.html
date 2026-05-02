@@ -78,7 +78,13 @@
 <header>
     <h1>🚌 Analizador Semántico — Red de Transporte Público</h1>
     <p>Ciudad de Tijuana, B.C. · Lenguajes y Autómatas 2 · ITT</p>
-    <a href="/mapa" style="color:#7FB3D3;text-decoration:none;font-size:13px;margin-left:20px">🗺️ Ver mapa interactivo</a>
+    <div style="display:flex; gap:20px; align-items:center; margin-top:8px;">
+        <a href="/mapa" style="color:#7FB3D3;text-decoration:none;font-size:13px;">🗺️ Ver mapa interactivo</a>
+        {% if user.rol == "admin" %}
+        <a href="/admin" style="color:#F39C12;text-decoration:none;font-size:13px;">⚙️ Panel Admin</a>
+        {% endif %}
+        <a href="/logout" style="color:#E74C3C;text-decoration:none;font-size:13px;">🚪 Cerrar sesión ({{ user.username }})</a>
+    </div>
 </header>
 
 <div class="container">

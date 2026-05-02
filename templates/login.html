@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0D1B2A; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: #1A2B3C; border-radius: 12px; padding: 40px; width: 360px; border: 1px solid #2E86C1; }
+        h1 { color: #fff; font-size: 22px; margin-bottom: 6px; }
+        p { color: #7FB3D3; font-size: 13px; margin-bottom: 24px; }
+        label { color: #7FB3D3; font-size: 12px; display: block; margin-bottom: 6px; }
+        input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #2E86C1; background: #0D1B2A; color: #fff; font-size: 14px; margin-bottom: 16px; }
+        button { width: 100%; padding: 11px; background: #2E86C1; color: #fff; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #1B4F72; }
+        .link { text-align: center; margin-top: 16px; }
+        .link a { color: #2E86C1; font-size: 13px; text-decoration: none; }
+        .flash { background: #C0392B; color: #fff; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+        .titulo-sistema { color: #2E86C1; font-size: 13px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🚌 Bienvenido</h1>
+    <p class="titulo-sistema">Sistema de Rutas de Transporte Público — Tijuana</p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="flash">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <label>Usuario</label>
+        <input type="text" name="username" placeholder="Tu usuario" required>
+        <label>Contraseña</label>
+        <input type="password" name="password" placeholder="Tu contraseña" required>
+        <button type="submit">Iniciar Sesión</button>
+    </form>
+    <div class="link">
+        <a href="/registro">¿No tienes cuenta? Regístrate</a>
+    </div>
+</div>
+</body>
+</html>

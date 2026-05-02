@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0D1B2A; color: #fff; }
+        header { background: #1B4F72; padding: 16px 30px; border-bottom: 3px solid #F39C12; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 18px; }
+        header a { color: #7FB3D3; text-decoration: none; font-size: 13px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card { background: #1A2B3C; border-radius: 10px; padding: 20px; border: 1px solid #F39C12; }
+        .card h2 { font-size: 14px; color: #F39C12; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select { width: 100%; padding: 9px; border-radius: 6px; border: 1px solid #2E86C1; background: #0D1B2A; color: #fff; font-size: 13px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; background: #F39C12; color: #0D1B2A; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #D68910; }
+        .resultado { margin-top: 10px; padding: 10px; border-radius: 6px; font-size: 12px; background: #0D1B2A; border: 1px solid #2E86C1; min-height: 36px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #F39C12; color: #0D1B2A; padding: 8px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #1B4F72; color: #ccc; }
+        tr:hover td { background: #1B4F72; }
+        .full { grid-column: span 2; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>⚙️ Panel de Administrador — Transporte TJ</h1>
+    <div style="display:flex;gap:20px;">
+        <a href="/">← Volver al sistema</a>
+        <a href="/logout" style="color:#E74C3C;">🚪 Cerrar sesión</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="grid">
+
+        <!-- Agregar parada -->
+        <div class="card">
+            <h2>➕ Agregar Parada</h2>
+            <input type="text" id="nueva-parada" placeholder="Nombre de la parada">
+            <button onclick="agregarParada()">Agregar Parada</button>
+            <div class="resultado" id="res-parada">—</div>
+        </div>
+
+        <!-- Eliminar parada -->
+        <div class="card">
+            <h2>🗑️ Eliminar Parada</h2>
+            <select id="parada-eliminar">
+                {% for p in paradas %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+            <button onclick="eliminarParada()" style="background:#E74C3C;color:#fff;">Eliminar Parada</button>
+            <div class="resultado" id="res-eliminar">—</div>
+        </div>
+
+        <!-- Agregar conexión -->
+        <div class="card">
+            <h2>🔗 Agregar Conexión</h2>
+            <select id="con-origen">
+                {% for p in paradas %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+            <select id="con-destino">
+                {% for p in paradas %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" id="con-peso" placeholder="Tiempo en minutos" min="1">
+            <button onclick="agregarConexion()">Agregar Conexión</button>
+            <div class="resultado" id="res-conexion">—</div>
+        </div>
+
+        <!-- Usuarios registrados -->
+        <div class="card">
+            <h2>👥 Usuarios Registrados</h2>
+            <table>
+                <tr><th>ID</th><th>Usuario</th><th>Rol</th></tr>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.rol }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <!-- Conexiones actuales -->
+        <div class="card full">
+            <h2>📋 Conexiones Actuales en la Red</h2>
+            <table>
+                <tr><th>Origen</th><th>Destino</th><th>Tiempo (min)</th></tr>
+                {% for u, v, data in aristas %}
+                <tr>
+                    <td>{{ u }}</td>
+                    <td>{{ v }}</td>
+                    <td>{{ data.weight }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+async function agregarParada() {
+    const nombre = document.getElementById("nueva-parada").value.trim();
+    const res = document.getElementById("res-parada");
+    if (!nombre) { res.textContent = "Escribe un nombre."; return; }
+    const data = await fetch("/admin/agregar_parada", {
+        method: "POST",
+        body: new URLSearchParams({ nombre })
+    }).then(r => r.json());
+    res.textContent = data.mensaje || data.error;
+}
+
+async function eliminarParada() {
+    const nombre = document.getElementById("parada-eliminar").value;
+    const res = document.getElementById("res-eliminar");
+    const data = await fetch("/admin/eliminar_parada", {
+        method: "POST",
+        body: new URLSearchParams({ nombre })
+    }).then(r => r.json());
+    res.textContent = data.mensaje || data.error;
+}
+
+async function agregarConexion() {
+    const origen = document.getElementById("con-origen").value;
+    const destino = document.getElementById("con-destino").value;
+    const peso = document.getElementById("con-peso").value;
+    const res = document.getElementById("res-conexion");
+    const data = await fetch("/admin/agregar_conexion", {
+        method: "POST",
+        body: new URLSearchParams({ origen, destino, peso })
+    }).then(r => r.json());
+    res.textContent = data.mensaje || data.error;
+}
+</script>
+
+</body>
+</html>
